@@ -1,1 +1,72 @@
-// TODO
+.posts {
+  margin-top: 2rem;
+
+  .post {
+    display: block;
+
+    & + .post {
+      margin-top: 5rem;
+    }
+
+    .title {
+      font-style: normal;
+      font-weight: bold;
+      font-size: 2.8rem;
+      line-height: 3.4rem;
+      color: var(--heading);
+      transition: color 0.3s;
+    }
+
+    .subtitle {
+      font-style: normal;
+      font-weight: normal;
+      font-size: 1.8rem;
+      line-height: 2.2rem;
+      color: var(--body);
+      margin-top: 0.8rem;
+    }
+
+    .footer {
+      display: flex;
+      gap: 2.4rem;
+
+      color: var(--info);
+      margin-top: 2.5rem;
+
+      & div {
+        display: flex;
+        align-items: center;
+
+        & svg {
+          width: 2rem;
+          height: 2rem;
+          margin-right: 0.8rem;
+        }
+      }
+    }
+
+    &:hover {
+      & .title {
+        color: var(--highlight);
+      }
+    }
+  }
+
+  .loadMorePosts {
+    border: none;
+    background-color: transparent;
+    color: var(--highlight);
+    font-style: normal;
+    font-weight: 600;
+    font-size: 1.8rem;
+    line-height: 2.2rem;
+    margin-top: 6rem;
+    cursor: pointer;
+    transition: filter 0.3s;
+
+    &:hover {
+      filter: brightness(0.8);
+    }
+
+  }
+}
