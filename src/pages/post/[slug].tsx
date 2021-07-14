@@ -1,10 +1,15 @@
 /* eslint-disable react/no-danger */
 /* eslint-disable react/no-array-index-key */
-import { useRouter } from 'next/router';
 import { GetStaticPaths, GetStaticProps } from 'next';
+import { useRouter } from 'next/router';
+import Image from 'next/image';
 import { RichText } from 'prismic-dom';
 import Prismic from '@prismicio/client';
-import { AiOutlineCalendar, AiOutlineUser } from 'react-icons/ai';
+import {
+  AiOutlineCalendar,
+  AiOutlineUser,
+  AiOutlineClockCircle,
+} from 'react-icons/ai';
 
 import { Container } from '../../components/Container';
 import { formatDate } from '../../utils/date';
@@ -50,11 +55,6 @@ export default function Post({ post }: PostProps): JSX.Element {
     return totWords + totWordsInHead + totWordsInBody;
   }, 0);
 
-  const mc = post.data.content.map(dc => ({
-    heading: dc.heading,
-    body: [{ text: RichText.asHtml(dc.body) }],
-  }));
-
   const parsedPost = {
     first_publication_date: post.first_publication_date,
     data: {
@@ -63,7 +63,10 @@ export default function Post({ post }: PostProps): JSX.Element {
         url: post.data.banner.url,
       },
       author: post.data.author,
-      content: mc,
+      content: post.data.content.map(dc => ({
+        heading: dc.heading,
+        body: [{ text: RichText.asHtml(dc.body) }],
+      })),
     },
   };
 
@@ -75,7 +78,14 @@ export default function Post({ post }: PostProps): JSX.Element {
   return (
     <article className={styles.post}>
       <div className={styles.banner}>
-        <img src={banner.url} alt="banner" />
+        <Image
+          src={banner.url}
+          alt="banner"
+          placeholder="blur"
+          layout="fill"
+          objectPosition="center center"
+          objectFit="cover"
+        />
       </div>
 
       <Container>
@@ -90,7 +100,7 @@ export default function Post({ post }: PostProps): JSX.Element {
             <span>{author}</span>
           </div>
           <div>
-            <AiOutlineUser />
+            <AiOutlineClockCircle />
             <span>{`${Math.ceil(totWordsInPost / 200)} min`}</span>
           </div>
         </div>
