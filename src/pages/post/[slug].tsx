@@ -1,11 +1,13 @@
 /* eslint-disable react/no-danger */
+/* eslint-disable react/no-array-index-key */
+import { useRouter } from 'next/router';
 import { GetStaticPaths, GetStaticProps } from 'next';
 import { RichText } from 'prismic-dom';
 import Prismic from '@prismicio/client';
 import { AiOutlineCalendar, AiOutlineUser } from 'react-icons/ai';
 
-import { Container } from 'components/Container';
-import { formatDate } from 'utils/date';
+import { Container } from '../../components/Container';
+import { formatDate } from '../../utils/date';
 import { getPrismicClient } from '../../services/prismic';
 
 // import commonStyles from '../../styles/common.module.scss';
@@ -33,10 +35,42 @@ interface PostProps {
 }
 
 export default function Post({ post }: PostProps): JSX.Element {
+  const router = useRouter();
+
+  if (router.isFallback) {
+    return <div>Carregando...</div>;
+  }
+
+  const totWordsInPost = post.data.content.reduce((totWords, contentPart) => {
+    const totWordsInHead = contentPart.heading.split(/\s+/).length;
+    const totWordsInBody =
+      contentPart.heading.split(/\s+/).length +
+      RichText.asText(contentPart.body).split(/\s+/).length;
+
+    return totWords + totWordsInHead + totWordsInBody;
+  }, 0);
+
+  const mc = post.data.content.map(dc => ({
+    heading: dc.heading,
+    body: [{ text: RichText.asHtml(dc.body) }],
+  }));
+
+  const parsedPost = {
+    first_publication_date: post.first_publication_date,
+    data: {
+      title: post.data.title,
+      banner: {
+        url: post.data.banner.url,
+      },
+      author: post.data.author,
+      content: mc,
+    },
+  };
+
   const {
     data: { banner, title, author, content },
     first_publication_date,
-  } = post;
+  } = parsedPost;
 
   return (
     <article className={styles.post}>
@@ -55,6 +89,10 @@ export default function Post({ post }: PostProps): JSX.Element {
             <AiOutlineUser />
             <span>{author}</span>
           </div>
+          <div>
+            <AiOutlineUser />
+            <span>{`${Math.ceil(totWordsInPost / 200)} min`}</span>
+          </div>
         </div>
 
         {content.map(({ heading, body }, index) => (
@@ -71,7 +109,10 @@ export default function Post({ post }: PostProps): JSX.Element {
 export const getStaticPaths: GetStaticPaths = async () => {
   const prismic = getPrismicClient();
   const posts = await prismic.query(
-    Prismic.Predicates.at('document.type', 'pos')
+    [Prismic.Predicates.at('document.type', 'pos')],
+    {
+      pageSize: 3,
+    }
   );
 
   const paths = posts.results.map(post => ({
@@ -80,34 +121,14 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
   return {
     paths,
-    fallback: 'blocking', // See the "fallback" section below
+    fallback: true,
   };
 };
 
-export const getStaticProps: GetStaticProps<PostProps> = async ({ params }) => {
+export const getStaticProps: GetStaticProps = async ({ params }) => {
   const { slug } = params;
   const prismic = getPrismicClient();
-  const response = await prismic.getByUID('pos', String(slug), {});
-
-  const { data, first_publication_date } = response;
-  const { title, author, banner } = data;
-
-  const mc = data.content.map(dc => ({
-    heading: dc.heading,
-    body: [{ text: RichText.asHtml(dc.body) }],
-  }));
-
-  const post = {
-    first_publication_date,
-    data: {
-      title,
-      banner: {
-        url: banner.url,
-      },
-      author,
-      content: mc,
-    },
-  };
+  const post = await prismic.getByUID('pos', String(slug), {});
 
   return {
     props: {

@@ -5,9 +5,9 @@ import Link from 'next/link';
 import Prismic from '@prismicio/client';
 import { AiOutlineCalendar, AiOutlineUser } from 'react-icons/ai';
 
-import { Container } from 'components/Container';
+import { Container } from '../components/Container';
 
-import { formatDate } from 'utils/date';
+import { formatDate } from '../utils/date';
 import { getPrismicClient } from '../services/prismic';
 
 // import commonStyles from '../styles/common.module.scss';
@@ -94,7 +94,7 @@ export default function Home({
             className={styles.loadMorePosts}
             onClick={loadMore}
           >
-            Mais registros
+            Carregar mais posts
           </button>
         )}
       </div>
@@ -109,7 +109,7 @@ export const getStaticProps: GetStaticProps<HomeProps> = async () => {
     [Prismic.Predicates.at('document.type', 'pos')],
     {
       fetch: ['post.title', 'post.subtitle', 'post.author'],
-      pageSize: 10,
+      pageSize: 3,
     }
   );
 
